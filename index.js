@@ -1,9 +1,9 @@
 
-
 const express = require('express')
 const dotenv = require("dotenv").config()
 const mongoose = require("mongoose")
 const authRoute = require("./Routes/authRoutes")
+const controllers = require("./Controllers/authController")
 
 
 const app = express()
@@ -13,7 +13,7 @@ app.use(express.json())
 const PORT = process.env.PORT || 8000
 
 mongoose.connect(`${process.env.MONGODB_URL}`)
-.then(()=> console.log("MongoDB Connected sucessfully"))
+.then(()=> console.log("MongoDB Connected successfully"))
 
 app.listen(PORT, ()=>{
   console.log(`server active on PORT ${PORT}`)

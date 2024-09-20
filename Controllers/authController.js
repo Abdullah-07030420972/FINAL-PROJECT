@@ -2,27 +2,27 @@
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const nodemailer = require("nodemailer")
-const validateTk = require("../Middleware/validateAuth")
 const user = require("../Models/userProfile")
 const workout = require("../Models/workout")
 const createMealPlan = require("../Models/mealPlan")
 const createExercises = require("../Models/exercises")
+const progress = require("../Models/userProgress")
 
 
 const signUp = async(request, response)=>{
   try {
 
-    const { userName, email, password, age, gender, fitnessGoals } = request.body
+    const { username, email, password, age, gender, fitnessGoals } = request.body
 
     const hashedpassword = await bcrypt.hash(password, 8)
 
-    const newUser = new user({userName, email, password:hashedpassword, age, gender, fitnessGoals})
+    const newUser = new user({username, email, password:hashedpassword, age, gender, fitnessGoals})
 
     await newUser.save()
 
     await sendEmail( email )
   
-    return response.status(200).json({message: "Registration Sucessful", user: newUser})
+    return response.status(200).json({message: "Registration Successful", user: newUser})
 
   } catch (error) {
     return response.status(500).json({ message: error.message })
@@ -34,16 +34,16 @@ const signIn = async(request, response)=>{
 
     const { email, password } = request.body
 
-    const user = await user.findOne({email})
+    const newUser = await user.findOne({email})
 
-    if(!user){
+    if(!newUser){
       return response.status(404).json({message: "Account not Found Please Create Account"})
     }
 
-    const isMatched = bcrypt.compare(User.password, password)
+    const isMatched = bcrypt.compare(newUser.password, password)
 
     if(!isMatched){
-      return response.status(500).json({message: "Invalid Email or Password"})
+      return response.status(500).json({message: "Invalid Email or Password!"})
     }
 
     const accessToken = jwt.sign({user: email}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "90m"})
@@ -52,18 +52,9 @@ const signIn = async(request, response)=>{
     return response.status(200).json({
       message:"Login Successful",
       accessToken,
-      user,
+      newUser,
     })
 
-  } catch (error) {
-    return response.status(500).json({ message: error.message })
-  }
-}
-
-const validateToken = (request, response)=>{
-  try {
-    return response.status(200).json({message: "Successful", User: request.user})
-    
   } catch (error) {
     return response.status(500).json({ message: error.message })
   }
@@ -72,14 +63,23 @@ const validateToken = (request, response)=>{
 const createWorkout = async(request, response)=>{
   try {
     
-    const {userId, workoutName, exercises, duration} = request.body
-  
-    const workout = new workout({userId, workoutName, exercises, duration})
-    await workout.save()
+    const { userId } = request.params
+
+    const {workoutName, exercises, duration} = request.body
+
+    if(!workoutName || !exercises || !duration){
+      return response.status(400).json({message: "All field are required"})
+    }
+
+    const createWorkout = new workout(
+      userId, 
+      {workoutName, exercises, duration})
+      
+    await createWorkout.save()
   
     return response.status(200).json({
       message: "Workout Created Successfully",
-      workout
+      createWorkout
     })
     
   } catch (error) {
@@ -89,17 +89,17 @@ const createWorkout = async(request, response)=>{
 
 const getWorkout = async (request, response)=>{
   try {
-    const { id } = request.params
+    const { userId } = request.params
 
-    const workout = await workout.findById( id )
+    const userWorkout = await workout.findById( id )
 
-    if (!workout){
+    if (!userWorkout){
       return response.status(400).json({message: "Workout not found"})
     }
 
     return response.status(200).json({
       message: "successfull",
-      workout
+      userWorkout
     })
 
   } catch (error) {
@@ -107,16 +107,20 @@ const getWorkout = async (request, response)=>{
   }
 }
 
-const editUser = async(request, response)=>{
+const editWorkout = async(request, response)=>{
 
     try {
-      const { id } = request.params
+    const { userId} = request.params
   
-    const {username, fitnessgoals, exercises, age, gender, workoutName} = request.body
+    const {workoutname, exercises, duration} = request.body
+
+    if(!workoutname || !exercises || !duration){
+      return response.status(400).json({message: "All field are required"})
+    }
   
-    const updatedUser = await user.findByIdAndUpdate(
-      id,
-      {username, fitnessgoals, exercises, age, gender, workoutName},
+    const updatedUser = await workout.findByIdAndUpdate(
+      userId,
+      {workoutname, exercises, duration},
       {new: true}
     )
 
@@ -139,7 +143,7 @@ const deleteWorkout = async (request, response)=>{
 
     const deletedWorkout = await workout.findByIdAndDelete(id)
 
-    return response.status(200).json({message: "Successfully deleted"})
+    return response.status(200).json({message: "Successfully"})
 
   } catch (error) {
     return response.status(500).json({ message: error.message })
@@ -148,10 +152,17 @@ const deleteWorkout = async (request, response)=>{
 
 const mealPlan = async (request, response) => {
   try {
-    const { userId, mealName, ingredients, calories, protein, carbs, fats } = request.body;
 
-    const newMealPlan = new createMealPlan({
-      user: userId,
+    const { userId } = request.params
+
+    const { mealName, ingredients, calories, protein, carbs, fats } = request.body;
+
+    if(!mealName || !ingredients || !calories || !protein || !carbs || !fats){
+      return response.status(400).json({message: "All fields are required"})
+    }
+
+    const userMealPlan = new createMealPlan({
+      userId,
       mealName,
       ingredients,
       nutritionalInfo: {
@@ -159,14 +170,14 @@ const mealPlan = async (request, response) => {
         protein,
         carbs,
         fats,
-      },
-    });
+      }
+    })
 
-    await newMealPlan.save();
+    await userMealPlan.save();
 
     return response.status(200).json({
       message: "Successful",
-      newMealPlan,
+      userMealPlan,
     });
   } catch (error) {
     return response.status(500).json({ message: error.message });
@@ -176,15 +187,23 @@ const mealPlan = async (request, response) => {
 const exercise = async(request, response)=>{
   try {
     
-    const {userId, name, type, duration, caloriesBurned} = request. body 
+    const {userId} = request.params
 
-    const exercises = new createExercises({userId, name, type, duration, caloriesBurned})
+    const {name, type, duration, caloriesBurned} = request. body 
 
-    await exercises.save()
+    if(!name || !type || !duration || !caloriesBurned){
+      return response.status(400).json({message: "All field are required"})
+    }
+
+    const userExercises = new createExercises(
+      userId, 
+      {name, type, duration, caloriesBurned})
+
+    await userExercises.save()
 
     return response.status(200).json({
       message: "Exercise Created Successfully",
-      exercise
+      userExercises
     })
 
   } catch (error) {
@@ -199,9 +218,94 @@ const all_Users = async(request, response)=>{
 
     return response.status(200).json({
       message: successful,
+      count,
       Users
     })
     
+  } catch (error) {
+    return response.status(500).json({ message: error.message })
+  }
+}
+
+const userprogress = async(request, response)=>{
+  try {
+
+    const{ height, weight, chest, waist, hips, workoutAchievement} = request.body
+
+    if(!height || !weight || !chest || !waist || !hips || !workoutAchievement){
+      return response.status(400).json({message: "All field are required"})
+    }
+
+    const userProgress = new progress({weight, height, workoutAchievement,
+
+      bodymeasurement: {
+        chest, 
+        waist, 
+        hips,
+        height
+      }}
+    )
+
+    await userProgress.save()
+
+    return response.status(200).json({message: "sucessful", progress: userProgress})
+
+  } catch (error) {
+    return response.status(500).json({ message: error.message })
+  }
+}
+
+const get_progress = async(request, response)=>{
+  try {
+    
+    const { Id } = request.params
+
+    const getProgress = await progress.findById({Id})
+
+    if(!getProgress){
+      return response.status(400).json({message: "No progress found!"})
+    }
+
+    return response.status(200).json({message: "sucessfull", getProgress}) 
+
+  } catch (error) {
+    return response.status(500).json({ message: error.message })
+  }
+}
+
+const update = async(request, response)=>{
+  try {
+    
+    const {id} = request.params
+
+    const{ weight, workoutAchievement, bodyMeasurement} = request.body
+
+    const updateProgress = await progress.finAndUpdate(
+      id, 
+      {weight, workoutAchievement, bodyMeasurement},
+      {new: true}
+    )
+
+    if(!updateProgress){
+      return response.status(400).json({message: "progress not found!"})
+    }
+
+    return response.status(200).json({message: "Successful",
+    progress: updateProgress
+    })
+  } catch (error) {
+    return response.status(400).json({ message: error.message })
+  }
+}
+
+const delete_progress = async(request, response)=>{
+  try {
+    const {userId} = request.params
+
+    const deleteProgress = await progress.findByIdAndDelete (userId)
+
+    return response.status(200).json({messge: "Successful"})
+
   } catch (error) {
     return response.status(500).json({ message: error.message })
   }
@@ -211,12 +315,15 @@ const all_Users = async(request, response)=>{
 module.exports = {
   signUp,
   signIn,
-  validateToken,
   getWorkout,
-  editUser,
+  editWorkout,
   deleteWorkout,
   createWorkout, 
   mealPlan, 
   exercise,
-  all_Users
+  all_Users,
+  userprogress,
+  get_progress,
+  update,
+  delete_progress
 }

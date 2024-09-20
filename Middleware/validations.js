@@ -68,6 +68,7 @@ const validEmail = (email) => {
   return re.test(String(email).toLowerCase());
 }
 
+
 module.exports = {
   validateRegistration,
   validateLogin,

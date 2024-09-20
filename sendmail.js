@@ -14,11 +14,12 @@ const sendEmail = async( email )=>{
     })
 
     const sendDetails = {
+      
       from: process.env.EMAIL,
       to: email, 
       subject: "ACCOUNT CREATED SUCCESFULY",
       html: `<div>
-      <h1> THANKS FOR YOUR REGISTRATION </h1>
+      <h1> Thanks for your Registration! </h1>
       <h3> kindly login with the details used for registration </h3>
       <h6>Keep fit and Stay Healthy!!</h6>
       </div>` 
