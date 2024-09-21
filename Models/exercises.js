@@ -1,6 +1,5 @@
 
 
-
 const mongoose = require("mongoose")
 
 const createExercisesSchema = new mongoose.Schema({

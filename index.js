@@ -3,8 +3,10 @@ const express = require('express')
 const dotenv = require("dotenv").config()
 const mongoose = require("mongoose")
 const authRoute = require("./Routes/authRoutes")
-const controllers = require("./Controllers/authController")
-
+const exercisesRoute = require("./Routes/exercisesRoutes")
+const mealRoutes = require("./Routes/mealRoutes")
+const progressRoutes = require("./Routes/progressRoutes")
+const workoutRouth = require("./Routes/workoutRoutes")
 
 const app = express()
 
@@ -24,7 +26,11 @@ app.get("/", (request, response)=>{
 })
 
 app.use("/api", authRoute)
+app.use("/api", exercisesRoute)
+app.use("/api", mealRoutes)
+app.use("/api", progressRoutes)
+app.use("/api", workoutRouth)
 
 app.use((request, response)=>{
-  return response.status(404).json({message: "Page not found!"}) 
+  return response.status(404).json({message: "Page does not exist"}) 
 })
