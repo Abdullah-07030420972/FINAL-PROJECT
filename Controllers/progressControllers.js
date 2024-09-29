@@ -12,7 +12,7 @@ const userprogress = async(request, response)=>{
       return response.status(400).json({message: "All field are required"})
     }
 
-    const userProgress = new progress({weight, height, workoutAchievement,
+    const userProgress = new progress.create({weight, height, workoutAchievement,
 
       bodymeasurement: {
         chest, 
@@ -34,15 +34,17 @@ const userprogress = async(request, response)=>{
 const get_progress = async(request, response)=>{
   try {
     
-    const { Id } = request.params
+    const { userId } = request.params
 
-    const getProgress = await progress.findById({Id})
+    const getProgress = await progress.findById({userId})
 
     if(!getProgress){
       return response.status(400).json({message: "No progress found!"})
     }
 
-    return response.status(200).json({message: "sucessfull", getProgress}) 
+    return response.status(200).json({
+      message: "sucessfull", 
+      getProgress}) 
 
   } catch (error) {
     return response.status(500).json({ message: error.message })
@@ -52,12 +54,12 @@ const get_progress = async(request, response)=>{
 const update = async(request, response)=>{
   try {
     
-    const {id} = request.params
+    const {userId} = request.params
 
     const{ weight, workoutAchievement, bodyMeasurement} = request.body
 
     const updateProgress = await progress.finAndUpdate(
-      id, 
+      {userId}, 
       {weight, workoutAchievement, bodyMeasurement},
       {new: true}
     )
@@ -78,7 +80,7 @@ const delete_progress = async(request, response)=>{
   try {
     const {userId} = request.params
 
-    const deleteProgress = await progress.findByIdAndDelete (userId)
+    const deleteProgress = await progress.findByIdAndDelete ({userId})
 
     return response.status(200).json({messge: "Successful"})
 

@@ -8,10 +8,10 @@ const router = express.Router()
 
 router.post("./meal", mealPlan)
 
-router.get("./getMealPlan", get_meal)
+router.get("./getMealPlan/:userId", get_meal)
 
-router.put("./updateMeal", update_meal)
+router.put("./updateMeal/:userId", update_meal)
 
-router.delete("./deleteplan", deletemeal)
+router.delete("./deleteplan/:userId", deletemeal)
 
 module.exports = router

@@ -33,7 +33,7 @@ const signIn = async(request, response)=>{
     const newUser = await user.findOne({email})
 
     if(!newUser){
-      return response.status(404).json({message: "Account not Found Please Create Account"})
+      return response.status(404).json({message: "Account not found please create an account!!"})
     }
 
     const isMatched = bcrypt.compare(newUser.password, password)

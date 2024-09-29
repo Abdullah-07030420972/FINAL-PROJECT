@@ -13,9 +13,10 @@ const createWorkout = async(request, response)=>{
       return response.status(400).json({message: "All field are required"})
     }
 
-    const createWorkout = new workout(
+    const createWorkout = new workout.create({
       userId, 
-      {workoutName, exercises, duration})
+      workoutName, exercises, duration})
+      
       
     await createWorkout.save()
   
@@ -33,7 +34,7 @@ const getWorkout = async (request, response)=>{
   try {
     const { userId } = request.params
 
-    const userWorkout = await workout.findById( userId )
+    const userWorkout = await workout.findById({userId})
 
     if (!userWorkout){
       return response.status(400).json({message: "Workout not found"})
@@ -81,11 +82,11 @@ const editWorkout = async(request, response)=>{
 
 const deleteWorkout = async (request, response)=>{
   try {
-    const { id } = request.params
+    const { userId } = request.params
 
-    const deletedWorkout = await workout.findByIdAndDelete(id)
+    const deletedWorkout = await workout.findByIdAndDelete({userId})
 
-    return response.status(200).json({message: "Successfully"})
+    return response.status(200).json({message: "Successful"})
 
   } catch (error) {
     return response.status(500).json({ message: error.message })

@@ -14,7 +14,7 @@ const mealPlan = async (request, response) => {
       return response.status(400).json({message: "All fields are required"})
     }
 
-    const userMealPlan = new createMealPlan({
+    const userMealPlan = new createMealPlan.create({
       userId,
       mealName,
       ingredients,
@@ -42,7 +42,7 @@ const get_meal = async(request, response)=>{
 
     const { userId } = request.params
 
-    const userMeal = await createMealPlan.findById( userId )
+    const userMeal = await createMealPlan.findById({userId})
 
     if(!userMeal){
       return response.status(400).json({message: "No meal plan found"})
@@ -69,7 +69,7 @@ const update_meal = async (request, response)=>{
       return response.status(400).json({message: "All field are required"})
     }
 
-    const updatedMeal = await createMealPlan.findByIdAndUpdate (userId,
+    const updatedMeal = await createMealPlan.findByIdAndUpdate ({userId},
       {mealName, ingredients, calories, protein, carbs, fats},
       {new: true}
     )
@@ -91,7 +91,7 @@ const deletemeal = async (request, response)=>{
   try {
     const { userId } = request.params
 
-    const deletedMeal = await createMealPlan.findByIdAndDelete(userId)
+    const deletedMeal = await createMealPlan.findByIdAndDelete({userId})
 
     return response.status(200).json({message: "Successful"})
 
