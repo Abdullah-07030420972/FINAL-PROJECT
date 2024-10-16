@@ -1,6 +1,8 @@
 
 
 const createMealPlan = require("../Models/mealPlan");
+const jwt = require("jsonwebtoken")
+const validateTk = require("../Middleware/validateAuth")
 
 
 const mealPlan = async (request, response) => {
@@ -28,9 +30,12 @@ const mealPlan = async (request, response) => {
 
     await userMealPlan.save();
 
+    const accessToken = jwt.sign({user: email}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "90m"})
+
     return response.status(200).json({
       message: "Successful",
-      userMealPlan,
+      accessToken,
+      userMealPlan
     });
   } catch (error) {
     return response.status(500).json({ message: error.message })
@@ -48,8 +53,11 @@ const get_meal = async(request, response)=>{
       return response.status(400).json({message: "No meal plan found"})
     }
     
+    const accessToken = jwt.sign({user: email}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "90m"})
+
     return response.status(200).json({
       message: "successfull",
+      accessToken,
       userMeal
     })
 
@@ -78,7 +86,10 @@ const update_meal = async (request, response)=>{
       return response.status(400).json({message: "Meal not found"})
     }
 
+    const accessToken = jwt.sign({user: email}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "90m"})
+
     return response.status(200).json({message: "successfull",
+      accessToken,
       updatedMeal
     })
 
@@ -93,7 +104,9 @@ const deletemeal = async (request, response)=>{
 
     const deletedMeal = await createMealPlan.findByIdAndDelete({userId})
 
-    return response.status(200).json({message: "Successful"})
+    const accessToken = jwt.sign({user: email}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "90m"})
+
+    return response.status(200).json({message: "Successful", accessToken})
 
   } catch (error) {
     return response.status(500).json({ message: error.message })

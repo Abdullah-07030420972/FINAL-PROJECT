@@ -1,6 +1,5 @@
 
 const bcrypt = require("bcrypt")
-const jwt = require("jsonwebtoken")
 const nodemailer = require("nodemailer")
 const user = require("../Models/userProfile")
 
@@ -42,12 +41,8 @@ const signIn = async(request, response)=>{
       return response.status(500).json({message: "Invalid Email or Password!"})
     }
 
-    const accessToken = jwt.sign({user: email}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "90m"})
-
-
     return response.status(200).json({
       message:"Login Successful",
-      accessToken,
       newUser,
     })
 

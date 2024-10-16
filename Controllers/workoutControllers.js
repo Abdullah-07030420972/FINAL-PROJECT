@@ -1,5 +1,7 @@
 
 const workout = require("../Models/workout")
+const jwt = require("jsonwebtoken")
+const validateTk = require("../Middleware/validateAuth")
 
 
 const createWorkout = async(request, response)=>{
@@ -19,9 +21,12 @@ const createWorkout = async(request, response)=>{
       
       
     await createWorkout.save()
+
+    const accessToken = jwt.sign({user: email}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "90m"})
   
     return response.status(200).json({
       message: "Workout Created Successfully",
+      accessToken,
       createWorkout
     })
     
@@ -40,8 +45,11 @@ const getWorkout = async (request, response)=>{
       return response.status(400).json({message: "Workout not found"})
     }
 
+    const accessToken = jwt.sign({user: email}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "90m"})
+
     return response.status(200).json({
       message: "successfull",
+      accessToken,
       userWorkout
     })
 
@@ -70,9 +78,12 @@ const editWorkout = async(request, response)=>{
     if(!updatedUser){
       return response.status(400).json({message: "user not found"})
     }
+
+    const accessToken = jwt.sign({user: email}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "90m"})
   
     return response.status(200).json({
       message: "Sucessful", 
+      accessToken,
       user: updatedUser})
   
     } catch (error) {
@@ -86,7 +97,9 @@ const deleteWorkout = async (request, response)=>{
 
     const deletedWorkout = await workout.findByIdAndDelete({userId})
 
-    return response.status(200).json({message: "Successful"})
+    const accessToken = jwt.sign({user: email}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "90m"})
+
+    return response.status(200).json({message: "Successful", accessToken})
 
   } catch (error) {
     return response.status(500).json({ message: error.message })

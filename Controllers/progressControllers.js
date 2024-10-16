@@ -1,7 +1,7 @@
 
 const progress = require("../Models/userProgress")
-
-
+const jwt = require("jsonwebtoken")
+const {validateTk} = require("../Middleware/validateAuth")
 
 const userprogress = async(request, response)=>{
   try {
@@ -24,7 +24,9 @@ const userprogress = async(request, response)=>{
 
     await userProgress.save()
 
-    return response.status(200).json({message: "sucessful", progress: userProgress})
+    const accessToken = jwt.sign({user: email}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "90m"})
+
+    return response.status(200).json({message: "sucessful", accessToken, progress: userProgress})
 
   } catch (error) {
     return response.status(500).json({ message: error.message })
@@ -42,8 +44,10 @@ const get_progress = async(request, response)=>{
       return response.status(400).json({message: "No progress found!"})
     }
 
+    const accessToken = jwt.sign({user: email}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "90m"})
+
     return response.status(200).json({
-      message: "sucessfull", 
+      message: "sucessfull", accessToken, 
       getProgress}) 
 
   } catch (error) {
@@ -68,8 +72,10 @@ const update = async(request, response)=>{
       return response.status(400).json({message: "progress not found!"})
     }
 
+    const accessToken = jwt.sign({user: email}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "90m"})
+
     return response.status(200).json({message: "Successful",
-    progress: updateProgress
+    progress: accessToken, updateProgress
     })
   } catch (error) {
     return response.status(400).json({ message: error.message })
@@ -82,7 +88,9 @@ const delete_progress = async(request, response)=>{
 
     const deleteProgress = await progress.findByIdAndDelete ({userId})
 
-    return response.status(200).json({messge: "Successful"})
+    const accessToken = jwt.sign({user: email}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "90m"})
+
+    return response.status(200).json({messge: "Successful", accessToken})
 
   } catch (error) {
     return response.status(500).json({ message: error.message })

@@ -3,6 +3,7 @@
 const express = require("express")
 
 const { exercise, get_exercise, update_exercise, delete_exercise } = require("../Controllers/exercisesController")
+
 const validateTk = require("../Middleware/validateAuth")
 
 const router = express.Router()
